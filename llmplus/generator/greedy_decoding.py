@@ -1,5 +1,5 @@
 import torch
-from llmplus_tmp.utils.masks import subsequent_mask
+from llmplus.utils.masks import subsequent_mask
 
 
 def greedy_decode(model, src, src_mask, max_len, start_symbol):

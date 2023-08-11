@@ -1,6 +1,6 @@
 import torch
 from torch.nn.functional import pad
-from llmplus_tmp.utils.masks import subsequent_mask
+from llmplus.utils.masks import subsequent_mask
 
 
 class Batch:
