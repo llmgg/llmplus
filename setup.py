@@ -1,11 +1,7 @@
 import sys
 import os
-import re
-import logging
 import argparse
-import subprocess
 from setuptools import setup, find_packages
-from contextlib import contextmanager
 
 ROOT = os.path.dirname(__file__)
 
@@ -52,19 +48,18 @@ else:
 # }
 
 args = dict(
-    name='llmplus_tmp',
+    name='llmplus',
 
     version=get_version(),
 
     description='Useful modules for LLM',
     long_description=get_long_description(),
-    long_description_content_type="text/markdown",
 
     url='https://****',
 
-    author='Xiongwen Wang',
-    author_email='wangxiongwen1@huawei.com',
-    maintainer_email='wangxiongwen1@huawei.com',
+    author='llmgg',
+    author_email='****@foxmail.com',
+    maintainer_email='*****@huawei.com',
 
     license='****',
 
