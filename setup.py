@@ -32,7 +32,10 @@ def get_requirements(filename):
 
 
 parser = argparse.ArgumentParser(add_help=False)
-parser.add_argument('-r', '--requirement', help='Optionally specify a different requirements file.', required=False)
+parser.add_argument(
+    '-r', '--requirement', help='Optionally specify a different requirements file.',
+    required=False
+)
 args, unparsed_args = parser.parse_known_args()
 sys.argv[1:] = unparsed_args
 
