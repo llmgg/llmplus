@@ -1,7 +1,7 @@
 import torch.nn as nn
-from llmplus_tmp.utils.clones import clones
-from llmplus_tmp.layer.resnet_connection import ResnetConnection
-from llmplus_tmp.layer.Normalize import LayerNorm
+from llmplus.utils.clones import clones
+from llmplus.layer.resnet_connection import ResnetConnection
+from llmplus.layer.Normalize import LayerNorm
 
 
 class DecoderLayer(nn.Module):
@@ -20,9 +20,13 @@ class DecoderLayer(nn.Module):
 
     def forward(self, x, memory, src_mask, tgt_mask):
         # 1) self-att
-        x = self.sublayer[0](self.norm[0](x), lambda x: self.self_attn(x, x, x, tgt_mask))
+        x = self.sublayer[0](
+            self.norm[0](x), lambda x: self.self_attn(x, x, x, tgt_mask)
+        )
         # 2) src-att
         m = memory
-        x = self.sublayer[1](self.norm[1](x), lambda x: self.src_attn(x, m, m, src_mask))
+        x = self.sublayer[1](
+            self.norm[1](x), lambda x: self.src_attn(x, m, m, src_mask)
+        )
         # 3) ff layer
         return self.sublayer[2](self.norm[2](x), self.feed_forward)

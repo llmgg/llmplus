@@ -11,31 +11,31 @@ def calculate_att_score(
     Calculate the attention scores between query and key
 
     The size of input tensor:
-    query: (batch_size, ntoken, nhead*q_dim)
-    key: (batch_size, ntoken, nhead*k_dim)
+    query: (batch_size, nq, nhead*q_dim)
+    key: (batch_size, nk, nhead*k_dim)
 
     The size of output tensor:
-    att_score: (batch_size, nhead, ntoken, ntoken)
+    att_score: (batch_size, nhead, nq, nk)
     """
     assert query.size(-1) == key.size(-1), \
         "query.dim({}) != key.dim({})".format(query.size(-1), key.size(-1))
 
-    batch_size, ntoken, d_model = query.size()
+    batch_size, nq, d_model = query.size()
     assert d_model % nhead == 0, \
         "the head is {}, but the d_model is {}.".format(nhead, d_model)
 
-    # (batch_size*nhead, ntoken_q, q_dim)
+    # (batch_size*nhead, nq, q_dim)
     q_dim = d_model // nhead
-    query = query.contiguous().view(batch_size, ntoken, nhead, q_dim).\
-        transpose(1, 2).reshape(batch_size*nhead, ntoken, q_dim)
+    query = query.contiguous().view(batch_size, nq, nhead, q_dim).\
+        transpose(1, 2).reshape(batch_size * nhead, nq, q_dim)
     query *= q_dim ** -0.5
-    # (batch_size*nhead, ntoken_k, k_dim)
+    # (batch_size*nhead, nk, k_dim)
     key = key.contiguous().view(batch_size, -1, nhead, q_dim).\
         transpose(1, 2).reshape(batch_size*nhead, -1, q_dim)
 
-    # (batch_size, nhead, ntoken_q, ntoken_k)
+    # (batch_size, nhead, nq, nk)
     return torch.bmm(query, key.mT).contiguous().\
-        view(batch_size, nhead, ntoken, -1)
+        view(batch_size, nhead, nq, -1)
 
 
 def calculate_att_value(
@@ -47,24 +47,28 @@ def calculate_att_value(
     Calculate the attention value between att_score and value
 
     The size of input tensor:
-    att_score: (batch_size, nhead, ntoken, ntoken)
-    value: (batch_size, ntoken, nhead*v_dim)
+    att_score: (batch_size, nhead, nq, nk)
+    value: (batch_size, nv, nhead*v_dim)
 
     The size of output tensor:
-    att_value: (batch_size, ntoken, nhead*v_dim)
+    att_value: (batch_size, nq, nhead*v_dim)
     """
-    batch_size, ntoken, dv = value.size()
+    batch_size, nv, dv = value.size()
+    assert att_score.size(-1) == nv, \
+        "Tokens in key({}) != Tokens in Value({})".format(
+            att_score.size(-1), nv
+        )
     assert dv % nhead == 0, \
         "the head is {}, but the dv is {}.".format(nhead, dv)
-    # (batch_size*nhead, ntoken_v, v_dim)
+    # (batch_size*nhead, nv, v_dim)
     v_dim = dv // nhead
-    value = value.contiguous().view(batch_size, ntoken, nhead, v_dim).\
-        transpose(1, 2).reshape(batch_size * nhead, ntoken, v_dim)
+    value = value.contiguous().view(batch_size, nv, nhead, v_dim).\
+        transpose(1, 2).reshape(batch_size * nhead, nv, v_dim)
 
-    # (batch_size*nhead, ntoken_q, ntoken_k)
-    att_score = att_score.contiguous().view(batch_size * nhead, -1, ntoken)
+    # (batch_size*nhead, nq, nk)
+    att_score = att_score.contiguous().view(batch_size * nhead, -1, nv)
 
-    # (batch_size, ntoken_q, nhead*v_dim)
+    # (batch_size, nq, nhead*v_dim)
     return torch.bmm(att_score, value).contiguous().\
         view(batch_size, nhead, -1, v_dim).transpose(1, 2).\
         reshape(batch_size, -1, nhead * v_dim)
@@ -75,16 +79,20 @@ def attention(
         nhead: int, mask=None, dropout=None
 ) -> torch.Tensor:
     """
-    The original token-wise dot product attention layer used in self-att_score and src-att_score
+    The original token-wise dot product attention layer used in self-att_score
+    and src-att_score
 
     The size of input tensor:
-    query: (batch_size, ntoken, nhead*q_dim)
-    key: (batch_size, ntoken, nhead*k_dim)
-    value: (batch_size, ntoken, nhead*v_dim)
-    q_dim should equal to k_dim.
+    query: (batch_size, nq, nhead*q_dim)
+    key: (batch_size, nk, nhead*k_dim)
+    value: (batch_size, nv, nhead*v_dim)
+
+    Note:
+        1. q_dim == k_dim
+        2. nk == nv
 
     The size of output tensor:
-    (batch_size, ntoken, nhead*v_dim)
+    (batch_size, nq, nhead*v_dim)
     """
     att_score = calculate_att_score(query, key, nhead)
 
@@ -94,7 +102,7 @@ def attention(
     if dropout is not None:
         att_score = dropout(att_score)
 
-    # (batch_size, ntoken, nhead*v_dim)
+    # (batch_size, nq, nhead*v_dim)
     return calculate_att_value(att_score, value, nhead)
 
 
@@ -121,16 +129,20 @@ class MultiHeadedAttention(nn.Module):
                 value: torch.Tensor, mask=None):
         """
         The size of input tensor:
-        query: (batch_size, ntoken, d_model)
-        key: (batch_size, ntoken, d_model)
-        value: (batch_size, ntoken, d_model)
+        query: (batch_size, nq, d_model)
+        key: (batch_size, nk, d_model)
+        value: (batch_size, nv, nhead*v_dim)
 
         In self-att, query, key and value is from a same tensor.
-        In src-att, query is the output of decoder, while key and value is the ones of encoder.
+        In src-att, query is the output of decoder, while key and value is the ones
+        of encoder.
+
+        The size of output tensor:
+        (batch_size, nq, d_model)
         """
         if mask is not None:
             mask = mask.unsqueeze(1)
-        batch_size, ntoken, d_model = query.size()
+        batch_size, nq, d_model = query.size()
 
         # 1) calculate q, k and v with linear model
         [query, key, value] = [
@@ -143,6 +155,7 @@ class MultiHeadedAttention(nn.Module):
         ]
 
         # 2) calculate the attention value
+        # (batch_size, nq, nhead * v_dim)
         x = attention(
             query, key, value, self.nhead, mask, self.dropout
         )
@@ -151,4 +164,5 @@ class MultiHeadedAttention(nn.Module):
         del value
 
         # 3) concat the value and output the result
+        # (batch_size, nq, d_model)
         return self.o_layer(x)
