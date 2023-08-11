@@ -1,15 +1,15 @@
 import torch.nn as nn
 import copy
-from llmplus.layer.voc_embedding import VocEmbedding
-from llmplus.layer.positional_embedding import PositionalEmbedding
-from llmplus.layer.attention import MultiHeadedAttention
-from llmplus.coder.encoder import Encoder
-from llmplus.coder.encoder_layer import EncoderLayer
-from llmplus.coder.decoder import Decoder
-from llmplus.coder.decoder_layer import DecoderLayer
-from llmplus.layer.feed_forward import FeedForward
-from llmplus.generator.generator import Generator
-from llmplus.models.encoder_decoder import EncoderDecoder
+from llmplus_tmp.layer.voc_embedding import VocEmbedding
+from llmplus_tmp.layer.positional_embedding import PositionalEmbedding
+from llmplus_tmp.layer.attention import MultiHeadedAttention
+from llmplus_tmp.coder.encoder import Encoder
+from llmplus_tmp.coder.encoder_layer import EncoderLayer
+from llmplus_tmp.coder.decoder import Decoder
+from llmplus_tmp.coder.decoder_layer import DecoderLayer
+from llmplus_tmp.layer.feed_forward import FeedForward
+from llmplus_tmp.generator.generator import Generator
+from llmplus_tmp.models.encoder_decoder import EncoderDecoder
 
 
 def make_model(

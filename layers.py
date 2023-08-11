@@ -21,7 +21,7 @@ import torch as pt
 import torch.nn.functional as F
 
 from sockeye import constants as C, utils
-from . import config
+from llmplus_tmp import config
 
 logger = logging.getLogger(__name__)
 

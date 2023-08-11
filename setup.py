@@ -49,7 +49,7 @@ else:
 # }
 
 args = dict(
-    name='llmplus',
+    name='llmplus_tmp',
 
     version=get_version(),
 

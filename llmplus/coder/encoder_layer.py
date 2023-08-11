@@ -1,7 +1,7 @@
 import torch.nn as nn
-from llmplus.utils.clones import clones
-from llmplus.layer.resnet_connection import ResnetConnection
-from llmplus.layer.Normalize import LayerNorm
+from llmplus_tmp.utils.clones import clones
+from llmplus_tmp.layer.resnet_connection import ResnetConnection
+from llmplus_tmp.layer.Normalize import LayerNorm
 
 
 class EncoderLayer(nn.Module):
