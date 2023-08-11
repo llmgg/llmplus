@@ -3,7 +3,6 @@ import logging
 from os.path import exists
 import torch
 import torch.distributed as dist
-import GPUtil
 import torch.multiprocessing as mp
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.data.functional import to_map_style_dataset
@@ -11,15 +10,15 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim.lr_scheduler import LambdaLR
-from llmplus_tmp.io.batch import Batch, collate_batch
-from llmplus_tmp.models.make_model import make_model
-from llmplus_tmp.utils.label_smoothing import LabelSmoothing
-from llmplus_tmp.utils.rate import rate
-from llmplus_tmp.utils.run_epoch import run_epoch, TrainState
-from llmplus_tmp.utils.helpers import DummyOptimizer
-from llmplus_tmp.utils.helpers import DummyScheduler
-from llmplus_tmp.io.tokenizer import load_tokenizer, tokenizing
-from llmplus_tmp.io.data_read import TextReader
+from llmplus.io.batch import Batch, collate_batch
+from llmplus.models.make_model import make_model
+from llmplus.utils.label_smoothing import LabelSmoothing
+from llmplus.utils.rate import rate
+from llmplus.utils.run_epoch import run_epoch, TrainState
+from llmplus.utils.helpers import DummyOptimizer
+from llmplus.utils.helpers import DummyScheduler
+from llmplus.io.tokenizer import load_tokenizer, tokenizing
+from llmplus.io.data_read import TextReader
 
 logger = logging.getLogger(__name__)
 
@@ -313,7 +312,6 @@ def train_worker(
             train_state=train_state,
         )
 
-        GPUtil.showUtilization()
         if is_main_process:
             file_path = "%s%.2d.pt" % (config["file_prefix"], epoch)
             torch.save(module.state_dict(), file_path)
