@@ -106,6 +106,16 @@ def attention(
     return calculate_att_value(att_score, value, nhead)
 
 
+def swa(
+        query: torch.Tensor, key: torch.Tensor, value: torch.Tensor,
+        nhead: int, mask=None, dropout=None
+) -> torch.Tensor:
+    """
+    Implementation of sentence-wise attention.
+    """
+    pass
+
+
 class MultiHeadedAttention(nn.Module):
     """
     Multi Head Attention Layer
