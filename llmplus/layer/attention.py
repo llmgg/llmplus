@@ -112,6 +112,18 @@ def swa(
 ) -> torch.Tensor:
     """
     Implementation of sentence-wise attention.
+
+    The size of input tensor:
+    query: (batch_size, nq, nhead*q_dim)
+    key: (batch_size, nk, nhead*k_dim)
+    value: (batch_size, nv, nhead*v_dim)
+
+    Note:
+        1. q_dim == k_dim
+        2. nk == nv
+
+    The size of output tensor:
+    (batch_size, nq, nhead*v_dim)
     """
     pass
 
