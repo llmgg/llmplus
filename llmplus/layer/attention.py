@@ -141,10 +141,11 @@ class MultiHeadedAttention(nn.Module):
         self.q_dim = d_model // nhead
         self.k_dim = self.q_dim
         self.v_dim = self.q_dim if v_dim is None else v_dim
-        self.q_layer = nn.Linear(d_model, self.nhead * self.q_dim)
-        self.k_layer = nn.Linear(d_model, self.nhead * self.k_dim)
-        self.v_layer = nn.Linear(d_model, self.nhead * self.v_dim)
-        self.o_layer = nn.Linear(self.nhead * self.v_dim, d_model)
+        self.d_model = d_model
+        self.q_layer = nn.Linear(self.d_model, self.nhead * self.q_dim)
+        self.k_layer = nn.Linear(self.d_model, self.nhead * self.k_dim)
+        self.v_layer = nn.Linear(self.d_model, self.nhead * self.v_dim)
+        self.o_layer = nn.Linear(self.nhead * self.v_dim, self.d_model)
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, query: torch.Tensor, key: torch.Tensor,
@@ -165,6 +166,11 @@ class MultiHeadedAttention(nn.Module):
         if mask is not None:
             mask = mask.unsqueeze(1)
         batch_size, nq, d_model = query.size()
+        assert d_model == self.d_model, \
+            "input tensors' d_model({}) != attention layers' d_model({})".format(
+                d_model, self.d_model
+            )
+
 
         # 1) calculate q, k and v with linear model
         [query, key, value] = [
