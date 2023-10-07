@@ -26,15 +26,15 @@ def calculate_att_score(
 
     # (batch_size*nhead, nq, q_dim)
     q_dim = d_model // nhead
-    query = query.contiguous().view(batch_size, nq, nhead, q_dim).\
+    query = query.contiguous().view(batch_size, nq, nhead, q_dim). \
         transpose(1, 2).reshape(batch_size * nhead, nq, q_dim)
     query *= q_dim ** -0.5
     # (batch_size*nhead, nk, k_dim)
-    key = key.contiguous().view(batch_size, -1, nhead, q_dim).\
-        transpose(1, 2).reshape(batch_size*nhead, -1, q_dim)
+    key = key.contiguous().view(batch_size, -1, nhead, q_dim). \
+        transpose(1, 2).reshape(batch_size * nhead, -1, q_dim)
 
     # (batch_size, nhead, nq, nk)
-    return torch.bmm(query, key.mT).contiguous().\
+    return torch.bmm(query, key.mT).contiguous(). \
         view(batch_size, nhead, nq, -1)
 
 
@@ -62,15 +62,15 @@ def calculate_att_value(
         "the head is {}, but the dv is {}.".format(nhead, dv)
     # (batch_size*nhead, nv, v_dim)
     v_dim = dv // nhead
-    value = value.contiguous().view(batch_size, nv, nhead, v_dim).\
+    value = value.contiguous().view(batch_size, nv, nhead, v_dim). \
         transpose(1, 2).reshape(batch_size * nhead, nv, v_dim)
 
     # (batch_size*nhead, nq, nk)
     att_score = att_score.contiguous().view(batch_size * nhead, -1, nv)
 
     # (batch_size, nq, nhead*v_dim)
-    return torch.bmm(att_score, value).contiguous().\
-        view(batch_size, nhead, -1, v_dim).transpose(1, 2).\
+    return torch.bmm(att_score, value).contiguous(). \
+        view(batch_size, nhead, -1, v_dim).transpose(1, 2). \
         reshape(batch_size, -1, nhead * v_dim)
 
 
@@ -132,6 +132,7 @@ class MultiHeadedAttention(nn.Module):
     """
     Multi Head Attention Layer
     """
+
     def __init__(self, nhead: int, d_model: int, dropout=0.1, v_dim=None):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % nhead == 0, \
@@ -170,7 +171,6 @@ class MultiHeadedAttention(nn.Module):
             "input tensors' d_model({}) != attention layers' d_model({})".format(
                 d_model, self.d_model
             )
-
 
         # 1) calculate q, k and v with linear model
         [query, key, value] = [

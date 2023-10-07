@@ -1,0 +1,7 @@
+torch~=1.13.1
+torchtext~=0.14.1
+setuptools~=47.1.0
+torchdata~=0.5.1
+spacy~=3.6.1
+typing~=3.7.4.3
+numpy~=1.21.6
