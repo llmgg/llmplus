@@ -143,15 +143,6 @@ def setup_main_logger(file_logging=True, console=True, path: Optional[str] = Non
     sys.excepthook = exception_hook
 
 
-def log_sockeye_version(logger):
-    from sockeye import __version__, __file__
-    try:
-        from sockeye.git_version import git_hash
-    except ImportError:
-        git_hash = "unknown"
-    logger.info(f"Sockeye: {__version__}, commit {git_hash}, path {__file__}")
-
-
 def log_torch_version(logger):
     try:
         from torch import __version__, __file__
