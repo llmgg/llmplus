@@ -280,8 +280,8 @@ class BinaryCrossEntropyBowLoss(Loss):
 
     def forward(self, output: pt.Tensor, label: pt.Tensor):
         """
-        pred: (batch_size, num_vocab) probabilities.
-        labels: (batch_size, target_length) words.
+        pred: (_batch_size, num_vocab) probabilities.
+        labels: (_batch_size, target_length) words.
         """
         nvs_pred = output
 
@@ -302,10 +302,10 @@ class BinaryCrossEntropyBowLoss(Loss):
         implied_pos_count = avg_pos_count * (pos_weight-1)
         scale = 1. / (self._num_labels + implied_pos_count)
 
-        # shape: (batch_size, vocab_size)
+        # shape: (_batch_size, vocab_size)
         loss = self.ce_loss(nvs_pred, bow, pos_weight)
 
-        # shape: (batch_size,)
+        # shape: (_batch_size,)
         loss = pt.sum(loss, 1) * scale
 
         # Remove the batch dimension
@@ -349,11 +349,11 @@ class PoissonLoss(Loss):
         """
         Returns Poisson loss and output given data and expected integers as labels.
 
-        :param length_predictions: Length predictions. Shape: (batch_size,).
-        :param labels: Targets. Shape: (batch_size,).
+        :param length_predictions: Length predictions. Shape: (_batch_size,).
+        :param labels: Targets. Shape: (_batch_size,).
         :return: Poisson loss of length predictions of the batch, and number of samples (batch size).
         """
-        # (batch_size,)
+        # (_batch_size,)
         loss = length_predictions - labels * pt.log(pt.clamp(length_predictions, min=1e-10))
         # (1,)
         loss = (loss * self.weight).sum()
@@ -381,11 +381,11 @@ class MSELoss(Loss):
         """
         Returns MSE loss.
 
-        :param length_predictions: Length predictions. Shape: (batch_size,).
-        :param labels: Targets. Shape: (batch_size,).
+        :param length_predictions: Length predictions. Shape: (_batch_size,).
+        :param labels: Targets. Shape: (_batch_size,).
         :return: MSE loss of length predictions of the batch.
         """
-        # (batch_size,)
+        # (_batch_size,)
         loss = (self.weight / 2) * pt.square(length_predictions - labels)
         # (1,)
         loss = loss.sum()

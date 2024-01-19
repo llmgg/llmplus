@@ -22,10 +22,10 @@ from llmplus.io.data_read import TextReader
 
 logger = logging.getLogger(__name__)
 
-# def data_gen(V, batch_size, nbatches):
+# def data_gen(V, _batch_size, nbatches):
 #     "Generate random data for a src-tgt copy task."
 #     for i in range(nbatches):
-#         data = torch.randint(1, V, size=(batch_size, 10))
+#         data = torch.randint(1, V, size=(_batch_size, 10))
 #         data[:, -1] = 1
 #         src = data.requires_grad_(False).clone().detach()
 #         tgt = torch.flip(data, dims=[-1])
@@ -48,13 +48,13 @@ logger = logging.getLogger(__name__)
 #         ),
 #     )
 #
-#     batch_size = 80
-#     print(batch_size)
+#     _batch_size = 80
+#     print(_batch_size)
 #     for epoch in range(10):
 #         print("Epoch NO: {}".format(epoch))
 #         model.train()
 #         run_epoch(
-#             data_gen(V, batch_size, 20),
+#             data_gen(V, _batch_size, 20),
 #             model,
 #             SimpleLossCompute(model.generator, criterion),
 #             optimizer,
@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 #         )
 #         model.eval()
 #         run_epoch(
-#             data_gen(V, batch_size, 5),
+#             data_gen(V, _batch_size, 5),
 #             model,
 #             SimpleLossCompute(model.generator, criterion),
 #             DummyOptimizer(),
@@ -278,7 +278,7 @@ def train_worker(
         vocab_tgt,
         spacy_en,
         spacy_de,
-        batch_size=config["batch_size"] // ngpus_per_node,
+        batch_size=config["_batch_size"] // ngpus_per_node,
         max_padding=config["max_padding"],
         is_distributed=is_distributed,
     )
@@ -361,7 +361,7 @@ def train_model(vocab_src, vocab_tgt, spacy_en, spacy_de, config):
 
 def load_trained_model(vocab_src, vocab_tgt, spacy_en, spacy_de):
     config = {
-        "batch_size": 1024,
+        "_batch_size": 1024,
         "distributed": True,
         "num_epochs": 10,
         "accum_iter": 10,
@@ -381,7 +381,7 @@ def load_trained_model(vocab_src, vocab_tgt, spacy_en, spacy_de):
 
 if __name__ == "__main__":
     logger.info("Running the example .. ")
-    # for _ in data_gen(V=13, batch_size=7, nbatches=3):
+    # for _ in data_gen(V=13, _batch_size=7, nbatches=3):
     #     print("src info:\n", _.src)
     #     print("src mask info:\n", _.src_mask)
     #     print("tgt info:\n", _.tgt)

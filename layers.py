@@ -295,8 +295,8 @@ class DotAttentionCell(pt.nn.Module):
                 key_values: pt.Tensor,
                 mask: Optional[pt.Tensor] = None):
         """
-        :param queries: Query tensor of shape (query_length, batch_size, hidden)
-        :param key_values: Interleaved Key & value tensor of shape (key/value_length, batch_size, hidden * 2)
+        :param queries: Query tensor of shape (query_length, _batch_size, hidden)
+        :param key_values: Interleaved Key & value tensor of shape (key/value_length, _batch_size, hidden * 2)
         :param mask: Optional boolean tensor for attention masking of shape (batch * heads, <qlen>, <kvlen>).
                      If this is cross-attention, <qlen> dimension can be 1 for broadcasting,
                      i.e. (batch * heads, 1, kvlen). For self-attention on the decoder side an autoregressive mask
@@ -325,20 +325,20 @@ def prepare_source_length_mask(lengths: pt.Tensor, heads: int, max_length: int, 
     """
     Prepare source length masks where positions of invalid tokens are marked as True.
 
-    :param lengths: Total source length and prepended source length. Shape: (batch_size, 2)
+    :param lengths: Total source length and prepended source length. Shape: (_batch_size, 2)
     :param heads: Number of attention heads.
     :param max_length: Maximum sequence length.
     :param expand: Expand to the heads.
     :param mask_prepended_tokens: Mask prepended tokens.
     :return: Source length mask.
     """
-    # (batch_size, max_len)
+    # (_batch_size, max_len)
     mask = ~(pt.arange(max_length, device=lengths.device).unsqueeze(0) < lengths[:, :1])
     if mask_prepended_tokens:
         prepended_token_mask = pt.arange(max_length, device=lengths.device).unsqueeze(0) < lengths[:, 1:2]
         mask |= prepended_token_mask
     if expand:
-        # (batch_size * heads, 1, max_len)
+        # (_batch_size * heads, 1, max_len)
         mask = mask.unsqueeze(1).expand(-1, heads, -1).reshape((-1, max_length)).unsqueeze(1)
     return mask
 
@@ -382,10 +382,10 @@ class MultiHeadAttentionBase(pt.nn.Module):
         """
         Returns context vectors of multi-head dot attention.
 
-        :param queries: Query tensor. Shape: (queries_length, batch_size, depth).
-        :param key_values: Keys/Values. Shape: (keys_values_length, batch_size, depth * 2).
+        :param queries: Query tensor. Shape: (queries_length, _batch_size, depth).
+        :param key_values: Keys/Values. Shape: (keys_values_length, _batch_size, depth * 2).
         :param mask: Optional boolean attention mask. See DotAttentionCell for shape requirements.
-        :return: Context vectors. Shape: (batch_size, query_max_length, output_depth).
+        :return: Context vectors. Shape: (_batch_size, query_max_length, output_depth).
         """
 
         # (query_max_length, batch, depth)
@@ -744,7 +744,7 @@ class PositionalEmbeddings(pt.nn.Module):
         Applies positional embeddings to input data.
 
         :param data: Input data. Shape: (batch, length or 1, num_embed)
-        :param steps: Optional steps input. If given, shape is (batch_size or 1, seq_len,)
+        :param steps: Optional steps input. If given, shape is (_batch_size or 1, seq_len,)
 
         :return: Data with positional embeddings added
         """
@@ -753,7 +753,7 @@ class PositionalEmbeddings(pt.nn.Module):
             # (batch, length, num_embed)
             pos_embedding = self.weight.unsqueeze(0)[:, :data.size()[1]]
         else:
-            # (batch_size or 1, seq_len, num_embed)
+            # (_batch_size or 1, seq_len, num_embed)
             # NOTE: temporary fix until we decide how to handle output steps > max_supported_seq_len_target
             steps = pt.clip(steps, max=self.max_seq_len - 1)
             pos_embedding = F.embedding(steps, self.weight)
